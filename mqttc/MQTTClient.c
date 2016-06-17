@@ -315,7 +315,7 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
     
     topic[topicLen] = '\0';
     messageStr[msgLen] = '\0';
-    MqttLog("[RECV (%d)%s] id = %d",topicName->lenstring.len,topic,getPubMessageId(messageStr));
+    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,topic,getPubMessageId(messageStr));
     logToLocal(c->indexTag,log_file_path,"INFO:收到消息--> topic: %s message:%s",topic,messageStr);
     if (c->dispatcher->onRecevie) {
         c->dispatcher->onRecevie(c->usedObj,topicName->lenstring.data,message->payload,(int)message->payloadlen);
@@ -749,7 +749,7 @@ int MQTTPublish(Client* c, const char* topicName, MQTTMessage* message)
     }
     else if (message->qos == QOS2)
     {
-        int retryTimes = 1;/*新增代码*/
+        int retryTimes = 2;/*新增代码*/
     waitCmd:
         countdown_ms(&timer, c->command_timeout_ms);
         int result = waitfor(c, PUBCOMP, &timer);

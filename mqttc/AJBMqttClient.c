@@ -44,7 +44,7 @@ void mqttClient_keepRunning(AJBMqttClient *client){
         if (rc!=SUCCESS || client->c.ping_outstanding > client->keepAlive+MAX_KEEPALIVE_TIMEO) {
             
             MqttLog("[ERR network]:   %s",errReason(rc));
-            logToLocal(client->indexTag,log_erro_path, "[ERR network]:   %s",errReason(rc));
+            logToLocal(client->indexTag,log_erro_path, "[ERR network]:   %s ---> %s",errReason(rc),client->clientId);
             if (rc==FAILURE) {
                 continue;
             }
@@ -96,14 +96,14 @@ MqttReturnCode mqttClient_connect(AJBMqttClient *client, char *host,int port){
     int interval = client->aliveAttr.recon_int;
     interval = interval>0?interval:1;
     int max = client->aliveAttr.recon_max;
-
+    client->c.indexTag = client->indexTag;
 reconnect:
     rc = ConnectNetwork(&client->n, host, port);
     MQTTClient(&client->c, &client->n, client->timout_ms, buf, PACKET_BUF_SIZE, readbuf, PACKET_BUF_SIZE);
     
     MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
     
-//    data.willFlag = 0;
+    //    data.willFlag = 0;
     data.MQTTVersion = 4;
     data.clientID.cstring = client->clientId;
     data.username.cstring = client->username;
@@ -120,7 +120,7 @@ reconnect:
     }
     MqttLog("[CONNECT request] %s:%d",host,port);
     rc = MQTTConnect(&client->c, &data);
-   
+    
     client->isConnected = (rc==SUCCESS);
     
     if(rc == SUCCESS){
@@ -129,9 +129,7 @@ reconnect:
     }
     else{
         MqttLog("[CONNECT failed] %s:%d",host,port);
-        if (client->dispatcher.onLoop) {
-            client->dispatcher.onLoop(client);
-        }
+        logToLocal(client->indexTag,log_erro_path,"[CONNECT failed] %s:%d ---> %s %d",host,port,client->clientId,client->keepworking);
         if (client->keepworking) {
             if (client->aliveAttr.auto_con && ((client->aliveAttr.recon_max==0) || (--max >0)) ) {
                 sleep(interval);
@@ -145,6 +143,7 @@ reconnect:
 
 
 MqttReturnCode mqttClient_reconnect(AJBMqttClient *client){
+    logToLocal(client->indexTag,log_erro_path,"[CONNECT reconnect] %s:%d ---> %s",client->host,client->port,client->clientId);
     return mqttClient_connect(client, client->host, client->port);
 }
 
@@ -168,7 +167,7 @@ void auto_reconnect(AJBMqttClient *client){
         }
     }
     else{
-//         MqttLog("[RECONECT disabled] reason: %s",client->aliveAttr.auto_con==0?"not allowed":"already reconnecting");
+        //         MqttLog("[RECONECT disabled] reason: %s",client->aliveAttr.auto_con==0?"not allowed":"already reconnecting");
     }
 }
 
@@ -202,7 +201,7 @@ MQTTMessage publishMessage(MqttClientPublishInfo *publishData,unsigned short mes
 }
 
 MqttReturnCode mqttClient_publish(AJBMqttClient *client,
-                            MqttClientPublishInfo *data){
+                                  MqttClientPublishInfo *data){
     MQTTMessage message = MessageMake(data, client->getMessageId(client));
     int rc = MQTTPublish2(&client->c, data->publishTopic, &message);
     logToLocal(client->indexTag,log_send_path,"INFO:发布消息--> topic: %s message:%s",data->publishTopic,data->publishContent);
@@ -211,14 +210,14 @@ MqttReturnCode mqttClient_publish(AJBMqttClient *client,
 
 
 MqttReturnCode mqttClient_publish2(AJBMqttClient *client,
-                                  MqttClientPublishInfo *data){
+                                   MqttClientPublishInfo *data){
     
     MQTTMessage message = MessageMake(data, client->getMessageId(client));
     int msgId = getPubMessageId(data->publishContent);
     if (msgId != -1) {
-         printf("[PUB %s] id = %d SEND ------->>>>>>>",data->publishTopic,msgId);
+        printf("[PUB %s] id = %d SEND ------->>>>>>>",data->publishTopic,msgId);
     }
-   
+    
     int rc = MQTTPublish(&client->c, data->publishTopic, &message);
     
     
@@ -272,7 +271,7 @@ MqttReturnCode mqttClient_subscribe(AJBMqttClient *client,char *topic,MqttServic
 }
 
 MqttReturnCode mqttClient_unsubscribe(AJBMqttClient *client,char *topic){
-   return MQTTUnsubscribe2(&client->c, topic);
+    return MQTTUnsubscribe2(&client->c, topic);
 }
 
 int getMessageId(AJBMqttClient *client){
@@ -304,7 +303,7 @@ void newAJBMqttClient(AJBMqttClient *client,char *username,char *password,char *
     strcpy(client->will.willTopic, topic);
     client->will.qos=2;
     client->will.retain = 0;
-
+    
     
 }
 
@@ -332,7 +331,7 @@ MqttReturnCode  mqttClient_start2(AJBMqttClient *client,MqttConfigure config,Mqt
     client->qos = 2;                      //default is QOS2
     client->timout_ms = config.timeout_ms;   //default is 2000ms
     client->aliveAttr = config.aliveAttr;
-//    MqttLog("%d-%d-%d-%d",client->aliveAttr.auto_con,client->aliveAttr.recon_int,client->aliveAttr.recon_max,client->aliveAttr.reconnecting);
+    //    MqttLog("%d-%d-%d-%d",client->aliveAttr.auto_con,client->aliveAttr.recon_int,client->aliveAttr.recon_max,client->aliveAttr.reconnecting);
     
     //    setWill(&client, "c/test1234567890/info", "this is a will");
     client->dispatcher = dispatcher;
@@ -355,10 +354,10 @@ MqttReturnCode  mqttClient_start2(AJBMqttClient *client,MqttConfigure config,Mqt
         MqttLog("[SUB %s] skip subscribe",client->clientId);
     }
     
-//    mqttClient_subscribe(client, "c/lixiao-0612/info", 2);
+    //    mqttClient_subscribe(client, "c/lixiao-0612/info", 2);
     dispatcher.shouldReSubscribe = dispatcher.shouldReSubscribe;
-//    client->keepRunning(client);
-
+    //    client->keepRunning(client);
+    
     return 0;
 }
 
@@ -400,7 +399,7 @@ MqttReturnCode mqttClient_startPub(AJBMqttClient *client,MqttConfigure config,Mq
     
     client->keepworking = 1;
     mqttClient_connect(client,config.host,config.port);
-//    client->keepworking = 0;
+    //    client->keepworking = 0;
     strcpy(client->topic, config.topic);
     
     dispatcher.shouldReSubscribe = dispatcher.shouldReSubscribe;
@@ -497,7 +496,7 @@ void get_mqtt_opts(const char *filePath,MqttConfigure *config){
             else if (strcmp(name, "recon_maxcount")==0){
                 config->aliveAttr.recon_max = atoi(value);
             }
-
+            
             else if (strcmp(name, "pub_interval")==0){
                 config->pubInterval_ms = atoi(value);
             }
@@ -517,9 +516,6 @@ void get_mqtt_opts(const char *filePath,MqttConfigure *config){
             }
             else if (strcmp(name, "start_interval")==0){
                 config->startInterval = atoi(value);
-            }
-            else if (strcmp(name, "start_index")==0){
-                config->startIndex = atoi(value);
             }
             else{
                 
