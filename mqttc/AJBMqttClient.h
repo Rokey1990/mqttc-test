@@ -104,6 +104,9 @@ struct AJBMqttClient{
     int (*getMessageId)(struct AJBMqttClient *client);
     MqttConfigure *config;
     int indexTag;
+    
+    unsigned char *readBuf;
+    unsigned char *sendBuf;
 };
 
 typedef struct AJBMqttClient AJBMqttClient;

@@ -62,6 +62,9 @@ int sendPacket(Client* c, int length, Timer* timer)
 #if PLATFORM_LINUX == 1
     pthread_mutex_unlock(&c->ipstack->mutex);
 #endif
+    if (sent != length) {
+        logToLocal(c->indexTag, log_erro_path, "send packet %d failed,sent Length %d",c->indexTag,sent);
+    }
     return rc;
 }
 
@@ -283,11 +286,11 @@ char isTopicMatched(char* topicFilter, MQTTString* topicName)
 
 
 
-char messageStr[MAX_CONTENT_LEN];
-char topic[MAX_TOPIC_LEN];
+
 int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
 {
-    
+    char messageStr[MAX_CONTENT_LEN];
+    char topic[MAX_TOPIC_LEN];
     int rc = SUCCESS;
     int topicLen = (int)topicName->lenstring.len;
     int msgLen = (int)message->payloadlen;
@@ -340,8 +343,12 @@ int keepalive(Client* c)
             InitTimer(&timer);
             countdown_ms(&timer, 1000);
             int len = MQTTSerialize_pingreq(c->buf, c->buf_size);
+            int rc = sendPacket(c, len, &timer);
+            if (rc!=SUCCESS) {
+                logToLocal(c->indexTag, log_erro_path, "client %d send pingreq failed!",c->indexTag);
+            }
             MqttLog("[SEND] PINGREQ");
-            sendPacket(c, len, &timer);
+           
 //            if (len > 0 && (rc = sendPacket(c, len, &timer)) == SUCCESS) // send the ping packet
 //                c->ping_outstanding = 0;
         }
@@ -394,7 +401,7 @@ int cycle(Client* c, Timer* timer)
             MQTTMessage msg;
             if (MQTTDeserialize_publish((unsigned char*)&msg.dup, (int*)&msg.qos, (unsigned char*)&msg.retained, (unsigned short*)&msg.id, &topicName,
                                         (unsigned char**)&msg.payload, (int*)&msg.payloadlen, c->readbuf, (int)c->readbuf_size) != 1){
-                printf("goto exit");
+                printf("goto exit --- %d",c->indexTag);
                 goto exit;
             }
             

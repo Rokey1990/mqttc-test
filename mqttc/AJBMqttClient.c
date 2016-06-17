@@ -43,7 +43,7 @@ void mqttClient_keepRunning(AJBMqttClient *client){
         
         if (rc!=SUCCESS || client->c.ping_outstanding > client->keepAlive+MAX_KEEPALIVE_TIMEO) {
             
-            MqttLog("[ERR network]:   %s",errReason(rc));
+            MqttLog("[ERR network]:   %s ---> %s",errReason(rc),client->clientId);
             logToLocal(client->indexTag,log_erro_path, "[ERR network]:   %s ---> %s",errReason(rc),client->clientId);
             if (rc==FAILURE) {
                 continue;
@@ -84,8 +84,7 @@ int reportOnline(AJBMqttClient *client){
 MqttReturnCode mqttClient_connect(AJBMqttClient *client, char *host,int port){
     
     int rc = 0;//return code of mqtt function
-    static unsigned char buf[PACKET_BUF_SIZE];
-    static unsigned char readbuf[PACKET_BUF_SIZE];
+    
     if (host != client->host) {
         strcpy(client->host, host);
     }
@@ -99,7 +98,7 @@ MqttReturnCode mqttClient_connect(AJBMqttClient *client, char *host,int port){
     client->c.indexTag = client->indexTag;
 reconnect:
     rc = ConnectNetwork(&client->n, host, port);
-    MQTTClient(&client->c, &client->n, client->timout_ms, buf, PACKET_BUF_SIZE, readbuf, PACKET_BUF_SIZE);
+    MQTTClient(&client->c, &client->n, client->timout_ms, client->sendBuf, PACKET_BUF_SIZE, client->readBuf, PACKET_BUF_SIZE);
     
     MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
     

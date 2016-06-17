@@ -64,7 +64,7 @@ char *timestamp();
         fclose(fp);\
     }\
     else{\
-        fprintf(stderr,"[WRITE FAILED] [%s] "fmt"\n",log_file_path,##__VA_ARGS__);\
+        fprintf(stderr,"[WRITE FAILED(%d)] [%s] "fmt"\n",errno,path,##__VA_ARGS__);\
         fflush(stderr);\
     }\
 }

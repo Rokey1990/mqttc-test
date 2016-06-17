@@ -166,14 +166,19 @@ void *mqttRecvRunloop(void *param){
     
     int index = ((SeesionConfig *)param)->index;
     
-        AJBMqttClient client;
-        if(startClientWithSessionConfig(&client,(SeesionConfig *)param) == SUCCESS){
-            client.keepRunning(&client);
-        }
-        else{
-            MqttLog("connect session failed,index :    %4d",index);
-            logToLocal(index, log_erro_path, "connect session failed,index :    %4d",index)
-        }
+    AJBMqttClient client;
+    client.sendBuf = (unsigned char *)malloc(PACKET_BUF_SIZE);
+    client.readBuf = (unsigned char *)malloc(PACKET_BUF_SIZE);
+
+    if(startClientWithSessionConfig(&client,(SeesionConfig *)param) == SUCCESS){
+        client.keepRunning(&client);
+    }
+    else{
+        MqttLog("connect session failed,index :    %4d",index);
+        logToLocal(index, log_erro_path, "connect session failed,index :    %4d",index)
+    }
+    free(client.readBuf);
+    free(client.sendBuf);
     
     return "finished";
 }
@@ -200,7 +205,7 @@ int main(int argc, const char * argv[]) {
     
     MqttConfigure config = DEFAULT_CONFIG;
     if (argc==1) {
-        config_file="/Users/lukai/Desktop/Command-Demo/MqttClient3/mqttc-linux/MqttCommand/config.cfg";
+        config_file="/Users/lukai/Desktop/Command-Demo/MqttMutiClient/mqttc/config.cfg";
     }
     else{
         config_file = argv[1];
@@ -243,7 +248,7 @@ int main(int argc, const char * argv[]) {
     mergeFiles(10000, log_erro_path);
     mergeFiles(10000, log_file_path);
     printf("begin stop the clients ...\n");
-    usleep(config.timeout_ms*1000);
+    usleep(20000);
     
     return 0;
 }
