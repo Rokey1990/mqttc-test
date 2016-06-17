@@ -99,14 +99,15 @@ void mergeFiles(int fileCount,char *basepath){
     char block[2048];
     FILE *bfp = fopen(basepath, "wb");
     if (bfp) {
-        for(int i = 0;i<fileCount;i++){
+        int i = 0;
+        for(i = 0;i<fileCount;i++){
             sprintf(path, "log/%d-%s",i,basepath);
             FILE *cfp = fopen(path, "rb");
             if (cfp) {
                 int readLen = 0;
                 int writeLen = 0;
                 while (!feof(cfp)) {
-                    readLen = fread(block, 1, 2048, cfp);
+                    readLen = (int)fread(block, 1, 2048, cfp);
                     writeLen = 0;
                     while (writeLen<readLen) {
                         writeLen += fwrite(block+writeLen, 1, readLen - writeLen, bfp);
@@ -218,7 +219,8 @@ int main(int argc, const char * argv[]) {
     
     int alive_thread_count = 0;
     pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * config.sessionCount);
-    for (int i =0 ; i<config.sessionCount; i++) {
+    int i =0;
+    for (i =0 ; i<config.sessionCount; i++) {
         if (!enable_running) {
             break;
         }
@@ -232,7 +234,7 @@ int main(int argc, const char * argv[]) {
     usleep(100*1000);
     printf("start client finished\n");
     void *resutl;
-    for (int i = 0; i<alive_thread_count; i++) {
+    for (i = 0; i<alive_thread_count; i++) {
         pthread_join(threads[i], &resutl);
     }
     

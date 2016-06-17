@@ -129,6 +129,9 @@ reconnect:
     }
     else{
         MqttLog("[CONNECT failed] %s:%d",host,port);
+        if (client->dispatcher.onLoop) {
+            client->dispatcher.onLoop(client);
+        }
         if (client->keepworking) {
             if (client->aliveAttr.auto_con && ((client->aliveAttr.recon_max==0) || (--max >0)) ) {
                 sleep(interval);
