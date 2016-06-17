@@ -112,25 +112,26 @@
 		219682821D13A95C00EA92FA /* mqttc */ = {
 			isa = PBXGroup;
 			children = (
-				219682831D13A95C00EA92FA /* AJBMqttClient.c */,
-				219682841D13A95C00EA92FA /* AJBMqttClient.h */,
 				219682851D13A95C00EA92FA /* config.cfg */,
 				219682861D13A95C00EA92FA /* main.c */,
-				219682881D13A95C00EA92FA /* MQTTCC3200.c */,
-				219682891D13A95C00EA92FA /* MQTTCC3200.h */,
-				2196828A1D13A95C00EA92FA /* MQTTClient.c */,
-				2196828B1D13A95C00EA92FA /* MQTTClient.h */,
+				219682B51D13B0F900EA92FA /* AJBMqttClient */,
+				219682B61D13B14500EA92FA /* MQTTClient */,
+				219682B41D13B0F300EA92FA /* MQTTPacket */,
+				219682A11D13A95C00EA92FA /* PlatformDefines.h */,
+			);
+			path = mqttc;
+			sourceTree = SOURCE_ROOT;
+		};
+		219682B41D13B0F300EA92FA /* MQTTPacket */ = {
+			isa = PBXGroup;
+			children = (
 				2196828C1D13A95C00EA92FA /* MQTTConnect.h */,
 				2196828D1D13A95C00EA92FA /* MQTTConnectClient.c */,
 				2196828E1D13A95C00EA92FA /* MQTTConnectServer.c */,
-				2196828F1D13A95C00EA92FA /* MqttDefines.h */,
 				219682901D13A95C00EA92FA /* MQTTDeserializePublish.c */,
-				219682911D13A95C00EA92FA /* MqttDispatcher.h */,
+				219682A21D13A95C00EA92FA /* StackTrace.h */,
 				219682921D13A95C00EA92FA /* MQTTFormat.c */,
 				219682931D13A95C00EA92FA /* MQTTFormat.h */,
-				219682941D13A95C00EA92FA /* MQTTLinux.c */,
-				219682951D13A95C00EA92FA /* MQTTLinux.h */,
-				219682961D13A95C00EA92FA /* MqttLog.c */,
 				219682971D13A95C00EA92FA /* MQTTPacket.c */,
 				219682981D13A95C00EA92FA /* MQTTPacket.h */,
 				219682991D13A95C00EA92FA /* MQTTPublish.h */,
@@ -141,11 +142,34 @@
 				2196829E1D13A95C00EA92FA /* MQTTUnsubscribe.h */,
 				2196829F1D13A95C00EA92FA /* MQTTUnsubscribeClient.c */,
 				219682A01D13A95C00EA92FA /* MQTTUnsubscribeServer.c */,
-				219682A11D13A95C00EA92FA /* PlatformDefines.h */,
-				219682A21D13A95C00EA92FA /* StackTrace.h */,
 			);
-			path = mqttc;
-			sourceTree = SOURCE_ROOT;
+			name = MQTTPacket;
+			sourceTree = "<group>";
+		};
+		219682B51D13B0F900EA92FA /* AJBMqttClient */ = {
+			isa = PBXGroup;
+			children = (
+				2196828F1D13A95C00EA92FA /* MqttDefines.h */,
+				219682911D13A95C00EA92FA /* MqttDispatcher.h */,
+				219682841D13A95C00EA92FA /* AJBMqttClient.h */,
+				219682831D13A95C00EA92FA /* AJBMqttClient.c */,
+				219682961D13A95C00EA92FA /* MqttLog.c */,
+			);
+			name = AJBMqttClient;
+			sourceTree = "<group>";
+		};
+		219682B61D13B14500EA92FA /* MQTTClient */ = {
+			isa = PBXGroup;
+			children = (
+				2196828A1D13A95C00EA92FA /* MQTTClient.c */,
+				2196828B1D13A95C00EA92FA /* MQTTClient.h */,
+				219682941D13A95C00EA92FA /* MQTTLinux.c */,
+				219682951D13A95C00EA92FA /* MQTTLinux.h */,
+				219682881D13A95C00EA92FA /* MQTTCC3200.c */,
+				219682891D13A95C00EA92FA /* MQTTCC3200.h */,
+			);
+			name = MQTTClient;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
