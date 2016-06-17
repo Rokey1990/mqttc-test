@@ -140,10 +140,12 @@ typedef struct {
     char cleansession;
     
     int sessionCount;
+    int startIndex;
     int startInterval;
     int pubCount;
     int pubInterval_ms;
     int disable_subscribe;
+    
 //    char willflag;
 //    char willtopic[32];
 //    char willcontent[64];

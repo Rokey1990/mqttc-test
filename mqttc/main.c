@@ -130,7 +130,7 @@ int startClientWithSessionConfig(AJBMqttClient *client,SeesionConfig *param){
     
     newAJBMqttClient(client,config->
                      username, config->password, config->clientid,config->cleansession);
-    sprintf(client->clientId, "%s-%d",config->clientid,((SeesionConfig *)param)->index);
+    sprintf(client->clientId, "%s%d",config->clientid,((SeesionConfig *)param)->index);
     
     client->keepAlive = config->keepAlive;    //default is 20s
     client->qos = 2;                      //default is QOS2
@@ -224,7 +224,7 @@ int main(int argc, const char * argv[]) {
         if (!enable_running) {
             break;
         }
-        SeesionConfig session = {i,&config,&dispatcher};
+        SeesionConfig session = {i+config.startIndex,&config,&dispatcher};
         pthread_t thread;
         pthread_create(&thread, NULL, mqttRecvRunloop, &session);
         threads[i] = thread;

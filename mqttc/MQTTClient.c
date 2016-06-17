@@ -749,7 +749,7 @@ int MQTTPublish(Client* c, const char* topicName, MQTTMessage* message)
     }
     else if (message->qos == QOS2)
     {
-        int retryTimes = 3;/*新增代码*/
+        int retryTimes = 1;/*新增代码*/
     waitCmd:
         countdown_ms(&timer, c->command_timeout_ms);
         int result = waitfor(c, PUBCOMP, &timer);
