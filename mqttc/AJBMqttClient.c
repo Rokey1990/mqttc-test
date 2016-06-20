@@ -516,6 +516,9 @@ void get_mqtt_opts(const char *filePath,MqttConfigure *config){
             else if (strcmp(name, "start_interval")==0){
                 config->startInterval = atoi(value);
             }
+            else if (strcmp(name, "start_index")==0){
+                config->startIndex = atoi(value);
+            }
             else{
                 
             }
