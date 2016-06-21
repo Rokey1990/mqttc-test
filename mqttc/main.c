@@ -97,29 +97,32 @@ void on_Loop(void *client){
 void mergeFiles(int fileCount,char *basepath){
     char path[128];
     char block[2048];
-    FILE *bfp = fopen(basepath, "wb");
-    if (bfp) {
+    
+    
         int i = 0;
         for(i = 0;i<fileCount;i++){
-            sprintf(path, "log/%d-%s",i,basepath);
-            FILE *cfp = fopen(path, "rb");
-            if (cfp) {
-                int readLen = 0;
-                int writeLen = 0;
-                while (!feof(cfp)) {
-                    readLen = (int)fread(block, 1, 2048, cfp);
-                    writeLen = 0;
-                    while (writeLen<readLen) {
-                        writeLen += fwrite(block+writeLen, 1, readLen - writeLen, bfp);
+            FILE *bfp = fopen(basepath, "wb");
+            if (bfp) {
+                sprintf(path, "log/%d-%s",i,basepath);
+                FILE *cfp = fopen(path, "rb");
+                if (cfp) {
+                    int readLen = 0;
+                    int writeLen = 0;
+                    while (!feof(cfp)) {
+                        readLen = (int)fread(block, 1, 2048, cfp);
+                        writeLen = 0;
+                        while (writeLen<readLen) {
+                            writeLen += fwrite(block+writeLen, 1, readLen - writeLen, bfp);
+                        }
+                        usleep(5);
+                        
                     }
-                    usleep(5);
-                    
                 }
+                fclose(bfp);
+                usleep(20);
             }
-            usleep(50);
         }
-    }
-    fclose(bfp);
+    
 }
 
 #pragma mark - publish
@@ -253,7 +256,7 @@ int main(int argc, const char * argv[]) {
     mergeFiles(10000, log_erro_path);
     mergeFiles(10000, log_file_path);
 
-    usleep(20000);
+    usleep(200000);
     
     return 0;
 }
