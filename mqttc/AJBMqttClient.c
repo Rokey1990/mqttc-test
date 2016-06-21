@@ -98,6 +98,7 @@ MqttReturnCode mqttClient_connect(AJBMqttClient *client, char *host,int port){
     client->c.indexTag = client->indexTag;
 reconnect:
     rc = ConnectNetwork(&client->n, host, port);
+//    MqttLog("connect result -------> %d",rc);
     MQTTClient(&client->c, &client->n, client->timout_ms, client->sendBuf, PACKET_BUF_SIZE, client->readBuf, PACKET_BUF_SIZE);
     
     MQTTPacket_connectData data = MQTTPacket_connectData_initializer;

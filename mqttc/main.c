@@ -169,6 +169,8 @@ void *mqttRecvRunloop(void *param){
     AJBMqttClient client;
     client.sendBuf = (unsigned char *)malloc(PACKET_BUF_SIZE);
     client.readBuf = (unsigned char *)malloc(PACKET_BUF_SIZE);
+    client.c.tmpTopic = (char *)malloc(PACKET_BUF_SIZE);
+    client.c.tmpMessage = (char *)malloc(PACKET_BUF_SIZE);
 
     if(startClientWithSessionConfig(&client,(SeesionConfig *)param) == SUCCESS){
         client.keepRunning(&client);
@@ -177,8 +179,11 @@ void *mqttRecvRunloop(void *param){
         MqttLog("connect session failed,index :    %4d",index);
         logToLocal(index, log_erro_path, "connect session failed,index :    %4d",index)
     }
+    free(client.c.tmpTopic);
+    free(client.c.tmpMessage);
     free(client.readBuf);
     free(client.sendBuf);
+    
     
     return "finished";
 }
@@ -247,7 +252,7 @@ int main(int argc, const char * argv[]) {
     mergeFiles(10000, log_send_path);
     mergeFiles(10000, log_erro_path);
     mergeFiles(10000, log_file_path);
-    printf("begin stop the clients ...\n");
+
     usleep(20000);
     
     return 0;

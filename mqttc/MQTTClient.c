@@ -289,8 +289,8 @@ char isTopicMatched(char* topicFilter, MQTTString* topicName)
 
 int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
 {
-    char messageStr[MAX_CONTENT_LEN];
-    char topic[MAX_TOPIC_LEN];
+//    char messageStr[MAX_CONTENT_LEN];
+//    char topic[MAX_TOPIC_LEN];
     int rc = SUCCESS;
     int topicLen = (int)topicName->lenstring.len;
     int msgLen = (int)message->payloadlen;
@@ -303,7 +303,7 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
         return FAILURE;
     }
     else{
-        memcpy(topic, topicName->lenstring.data, topicLen);
+        memcpy(c->tmpTopic, topicName->lenstring.data, topicLen);
     }
     if (msgLen>MAX_CONTENT_LEN ) {
         
@@ -313,13 +313,13 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
         return FAILURE;
     }
     else{
-        memcpy(messageStr, message->payload, msgLen);
+        memcpy(c->tmpMessage, message->payload, msgLen);
     }
     
-    topic[topicLen] = '\0';
-    messageStr[msgLen] = '\0';
-    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,topic,getPubMessageId(messageStr));
-    logToLocal(c->indexTag,log_file_path,"INFO:收到消息--> topic: %s message:%s",topic,messageStr);
+    c->tmpTopic[topicLen] = '\0';
+    c->tmpMessage[msgLen] = '\0';
+    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,c->tmpTopic,getPubMessageId(c->tmpMessage));
+    logToLocal(c->indexTag,log_file_path,"INFO:收到消息--> topic: %s message:%s",c->tmpTopic,c->tmpMessage);
     if (c->dispatcher->onRecevie) {
         c->dispatcher->onRecevie(c->usedObj,topicName->lenstring.data,message->payload,(int)message->payloadlen);
     }
