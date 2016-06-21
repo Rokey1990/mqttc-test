@@ -101,7 +101,7 @@ void mergeFiles(int fileCount,char *basepath){
     
         int i = 0;
         for(i = 0;i<fileCount;i++){
-            FILE *bfp = fopen(basepath, "wb");
+            FILE *bfp = fopen(basepath, "ab");
             if (bfp) {
                 sprintf(path, "log/%d-%s",i,basepath);
                 FILE *cfp = fopen(path, "rb");
