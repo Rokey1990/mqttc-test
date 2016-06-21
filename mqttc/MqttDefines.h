@@ -49,6 +49,9 @@ char *timestamp();
 
 #define logToLocal(index,file_path,fmt,...) {\
     char path[128]={};\
+    if(file_path == log_erro_path){\
+        printf(""fmt"\n",##__VA_ARGS__);\
+    }\
     sprintf(path,"log/%d-%s",index,file_path);\
     FILE *fp = fopen(path, "a+");\
     if (fp) {\

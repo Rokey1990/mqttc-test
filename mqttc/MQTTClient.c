@@ -341,7 +341,7 @@ int keepalive(Client* c)
         {
             Timer timer;
             InitTimer(&timer);
-            countdown_ms(&timer, 1000);
+            countdown_ms(&timer, 3000);
             int len = MQTTSerialize_pingreq(c->buf, c->buf_size);
             int rc = sendPacket(c, len, &timer);
             if (rc!=SUCCESS) {
