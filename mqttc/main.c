@@ -102,6 +102,7 @@ void mergeFiles(int fileCount,char *basepath){
         int i = 0;
         for(i = 0;i<fileCount;i++){
             FILE *bfp = fopen(basepath, "ab");
+            fseek(bfp, 0, SEEK_END);
             if (bfp) {
                 sprintf(path, "log/%d-%s",i,basepath);
                 FILE *cfp = fopen(path, "rb");
@@ -117,6 +118,7 @@ void mergeFiles(int fileCount,char *basepath){
                         usleep(5);
                         
                     }
+                    fclose(cfp);
                 }
                 fclose(bfp);
                 usleep(20);
@@ -256,7 +258,7 @@ int main(int argc, const char * argv[]) {
     mergeFiles(10000, log_erro_path);
     mergeFiles(10000, log_file_path);
 
-    usleep(200000);
+    usleep(1000000);
     
     return 0;
 }
