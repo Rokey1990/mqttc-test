@@ -128,6 +128,10 @@ reconnect:
         reportOnline(client);
     }
     else{
+        client->n.disconnect(&client->n);
+        if (client->dispatcher.onLoop) {
+            client->dispatcher.onLoop(client);
+        }
         MqttLog("[CONNECT failed] %s:%d",host,port);
         logToLocal(client->indexTag,log_erro_path,"[CONNECT failed] %s:%d ---> %s %d",host,port,client->clientId,client->keepworking);
         if (client->keepworking) {
