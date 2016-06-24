@@ -243,7 +243,7 @@ int main(int argc, const char * argv[]) {
         SeesionConfig session = {i+config.startIndex,&config,&dispatcher};
         pthread_t thread;
         int threadRc = pthread_create(&thread, NULL, mqttRecvRunloop, &session);
-        printf("start index ----> %d : %d\n",i,threadRc);
+        // printf("start index ----> %d : %d\n",i,threadRc);
         threads[i] = thread;
         alive_thread_count++;
         usleep(config.startInterval*1000);
