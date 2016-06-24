@@ -347,7 +347,7 @@ int keepalive(Client* c)
             if (rc!=SUCCESS) {
                 logToLocal(c->indexTag, log_erro_path, "client %d send pingreq failed!",c->indexTag);
             }
-            MqttLog("[SEND] PINGREQ");
+//            MqttLog("[SEND] PINGREQ");
            
 //            if (len > 0 && (rc = sendPacket(c, len, &timer)) == SUCCESS) // send the ping packet
 //                c->ping_outstanding = 0;
@@ -482,7 +482,7 @@ int cycle(Client* c, Timer* timer)
             }
             break;
         case PINGRESP:
-            MqttLog("[RECV] PINGRESP");
+//            MqttLog("[RECV] PINGRESP");
             c->ping_outstanding = 0;
             break;
     }

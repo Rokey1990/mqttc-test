@@ -236,12 +236,14 @@ int main(int argc, const char * argv[]) {
     pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * config.sessionCount);
     int i =0;
     for (i =0 ; i<config.sessionCount; i++) {
+        
         if (!enable_running) {
             break;
         }
         SeesionConfig session = {i+config.startIndex,&config,&dispatcher};
         pthread_t thread;
-        pthread_create(&thread, NULL, mqttRecvRunloop, &session);
+        int threadRc = pthread_create(&thread, NULL, mqttRecvRunloop, &session);
+        printf("start index ----> %d : %d\n",i,threadRc);
         threads[i] = thread;
         alive_thread_count++;
         usleep(config.startInterval*1000);
