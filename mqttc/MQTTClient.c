@@ -108,7 +108,7 @@ int decodePacket(Client* c, int* value, int timeout)
         rc = c->ipstack->mqttread(c->ipstack, &i, 1, timeout);
         if (rc != 1) {
             MqttLog("%s:%d",__func__,rc);
-            if (rc == -1 && errno == EAGAIN) {
+            if (rc == -1 ) {
                 continue;
             }
             else{
