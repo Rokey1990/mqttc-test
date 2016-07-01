@@ -195,10 +195,6 @@ int readPacket(Client* c, Timer* timer)
             logToLocal(c->indexTag, log_erro_path, "unkown header byte ---- %02x",crc);
             return ERR_PACKET_TYPE;
         }
-        droppedBytes++;
-        if (expired(timer)) {
-            goto exit;
-        }
     }while (1);
     if (droppedBytes>0) {
         logToLocal(c->indexTag,log_erro_path, "[MQTT RECEIVE ERROR] dropped bytes:%d",droppedBytes);
@@ -236,11 +232,7 @@ int readPacket(Client* c, Timer* timer)
         if (length <= 0) {
             MqttLog("%s:length = %d",__func__,length);
             retryTimes = 0;
-            if (errno ==EAGAIN) {
-                continue;
-            }
-            rc = FAILURE;
-            goto exit;
+            continue;
         }
         readBytes += length;
     }

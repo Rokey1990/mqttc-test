@@ -82,7 +82,7 @@ int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 		{
             if (errno != ENOTCONN && errno != ECONNRESET)
 			{
-                if (errno == EAGAIN && bytes>0) {
+                if (bytes>0) {
                     usleep(500);
                     continue;
                 }
