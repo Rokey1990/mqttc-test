@@ -192,7 +192,8 @@ int readPacket(Client* c, Timer* timer)
             break;
         }
         else{
-            exit(-1);
+            logToLocal(c->indexTag, log_erro_path, "unkown header byte ---- %02x",crc);
+            return ERR_PACKET_TYPE;
         }
         droppedBytes++;
         if (expired(timer)) {
