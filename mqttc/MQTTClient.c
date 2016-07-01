@@ -213,26 +213,28 @@ int readPacket(Client* c, Timer* timer)
     /* 3. read the rest of the buffer using a callback to supply the rest of the data */
     
     int leftTime = 0;
-    int retryTimes = 0;
     
     int readBytes = 0;
         
-    while (readBytes<rem_len && retryTimes<3) {
+    while (readBytes<rem_len) {
         if (expired(timer)) {
             printf("[IMPORTANT] read packet retrying\n");
-            retryTimes++;
-            leftTime = 5;
+            leftTime = 100;
         }
         else{
             leftTime = left_ms(timer);
-            leftTime = leftTime<2?2:leftTime;
+            leftTime = leftTime<100?100:leftTime;
         }
         
         int length = c->ipstack->mqttread(c->ipstack, c->readbuf + len + readBytes, rem_len - readBytes, leftTime);
-        if (length <= 0) {
-            MqttLog("%s:length = %d",__func__,length);
-            retryTimes = 0;
+        if (length < 0) {
+            logToLocal(c->indexTag, log_erro_path, "[RECV error]%s:length = %d",__func__,length);
             continue;
+        }
+        else if (length == 0){
+            logToLocal(c->indexTag, log_erro_path, "[RECV error]%s:length = %d",__func__,0);
+            rc = ERR_PACKET_TYPE;
+            goto exit;
         }
         readBytes += length;
     }

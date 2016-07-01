@@ -31,7 +31,7 @@
 #define MAX_KEEPALIVE_TIMEO     10          /*心跳延时允许的最大时间*/
 #define ERR_PACKET_TYPE         65534       /*网络异常时，设定PACKET_TYPE无效,设定错误id为0x1111111111111110*/
 
-#define ENABLE_LOG              0
+#define ENABLE_LOG              1
 #define ENABLE_LOG_TIMESTAMP    1
 
 /*

@@ -65,13 +65,16 @@ void InitTimer(Timer* timer)
 
 int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
+    
+    timeout_ms = timeout_ms<100?100:timeout_ms;
+    
 	struct timeval interval = {timeout_ms / 1000, (timeout_ms % 1000) * 1000};
 	if (interval.tv_sec < 0 || (interval.tv_sec == 0 && interval.tv_usec <= 0))
 	{
 		interval.tv_sec = 0;
 		interval.tv_usec = 100;
 	}
-
+    
 	setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval));
 
 	int bytes = 0;
@@ -80,19 +83,12 @@ int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 		int rc = recv(n->my_socket, &buffer[bytes], (size_t)(len - bytes), 0);
 		if (rc == -1)
 		{
-            if (errno != ENOTCONN && errno != ECONNRESET)
-			{
-                if (bytes>0) {
-                    usleep(500);
-                    continue;
-                }
-				bytes = -1;
-				break;
-			}
-            else{
-                printf("recv error: other reasons --- %d\n",errno);
-                return 0;
+            if (bytes>0) {
+                usleep(500);
+                continue;
             }
+            bytes = -1;
+            break;
 		}
         else if (rc ==0){
             return 0;
