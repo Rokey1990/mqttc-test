@@ -340,7 +340,7 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
     
     c->tmpTopic[topicLen] = '\0';
     c->tmpMessage[msgLen] = '\0';
-//    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,c->tmpTopic,getPubMessageId(c->tmpMessage));
+    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,c->tmpTopic,getPubMessageId(c->tmpMessage));
     logToLocal(c->indexTag,log_file_path,"INFO:收到消息--> topic: %s message:%s",c->tmpTopic,c->tmpMessage);
     if (c->dispatcher->onRecevie) {
         c->dispatcher->onRecevie(c->usedObj,topicName->lenstring.data,message->payload,(int)message->payloadlen);
@@ -428,7 +428,7 @@ int cycle(Client* c, Timer* timer)
                 goto exit;
             }
             else{
-                MqttLog("[cid %d] msg ---> %d (%d,%d,%d,%d,%d)\n",c->indexTag,decRc,msg.dup,msg.qos,msg.retained,msg.id,topicName.lenstring.len);
+//                MqttLog("[cid %d] msg ---> %d (%d,%d,%d,%d,%d)\n",c->indexTag,decRc,msg.dup,msg.qos,msg.retained,msg.id,topicName.lenstring.len);
             }
             
             deliverMessage(c, &topicName, &msg);
