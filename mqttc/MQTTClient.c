@@ -226,11 +226,11 @@ int readPacket(Client* c, Timer* timer)
     while (readBytes<rem_len) {
         if (expired(timer)) {
             printf("[IMPORTANT] read packet retrying - %d: %d %d\n",c->ipstack->my_socket,readBytes,rem_len);
-            leftTime = 100;
+            leftTime = 5;
         }
         else{
             leftTime = left_ms(timer);
-            leftTime = leftTime<100?100:leftTime;
+            leftTime = leftTime<5?5:leftTime;
         }
         
         int length = c->ipstack->mqttread(c->ipstack, c->readbuf + len + readBytes, rem_len - readBytes, leftTime);
