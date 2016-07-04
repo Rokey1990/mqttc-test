@@ -81,7 +81,6 @@ int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 		{
             if (bytes>0) {
                 printf("%s receive -1\n",__func__);
-                usleep(500);
                 continue;
             }
             bytes = -1;
