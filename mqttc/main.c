@@ -115,13 +115,13 @@ void mergeFiles(int fileCount,char *basepath){
                         while (writeLen<readLen) {
                             writeLen += fwrite(block+writeLen, 1, readLen - writeLen, bfp);
                         }
-                        usleep(5);
+                        usleep(2);
                         
                     }
                     fclose(cfp);
                 }
                 fclose(bfp);
-                usleep(20);
+                usleep(10);
             }
         }
     
