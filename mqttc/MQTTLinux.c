@@ -65,9 +65,7 @@ void InitTimer(Timer* timer)
 
 int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
-    if (timeout_ms <= 0) {
-        return -1;
-    }
+    timeout_ms = timeout_ms<100?100:timeout_ms;
     struct timeval interval = {timeout_ms/1000, (timeout_ms%1000)*1000};
     
     if (setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval)) < 0) {

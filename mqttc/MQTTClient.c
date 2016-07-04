@@ -178,7 +178,6 @@ int readPacket(Client* c, Timer* timer)
     int readrc = 0;
     int crc = FAILURE;
     int droppedBytes = 0;
-    
     do{
         readrc = c->ipstack->mqttread(c->ipstack, c->readbuf, 1, left_ms(timer));
         if (readrc == 0) {
@@ -230,7 +229,7 @@ int readPacket(Client* c, Timer* timer)
         }
         else{
             leftTime = left_ms(timer);
-            leftTime = leftTime<5?5:leftTime;
+            leftTime = leftTime<5?100:leftTime;
         }
         
         int length = c->ipstack->mqttread(c->ipstack, c->readbuf + len + readBytes, rem_len - readBytes, leftTime);
@@ -365,7 +364,9 @@ int keepalive(Client* c)
             InitTimer(&timer);
             countdown_ms(&timer, 3000);
             int len = MQTTSerialize_pingreq(c->buf, c->buf_size);
+            MqttLog("begin send");
             int rc = sendPacket(c, len, &timer);
+            MqttLog("send ok");
             if (rc!=SUCCESS) {
                 logToLocal(c->indexTag, log_erro_path, "client %d send pingreq failed!",c->indexTag);
             }
