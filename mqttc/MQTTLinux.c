@@ -184,7 +184,7 @@ int ConnectNetwork(Network* n, char* addr, int port)
 //                    printf("set recevie buffer size ------ %d\n",bufSize);
                 }
             }
-            struct timeval interval = {1, 0};
+            struct timeval interval = {0, 100*1000};
             
             if (setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval)) < 0) {
                 printf("-----------------------------set recvtimeout error\n");
