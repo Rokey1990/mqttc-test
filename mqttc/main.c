@@ -176,6 +176,10 @@ void *mqttRecvRunloop(void *param){
     client.readBuf = (unsigned char *)malloc(PACKET_BUF_SIZE);
     client.c.tmpTopic = (char *)malloc(PACKET_BUF_SIZE);
     client.c.tmpMessage = (char *)malloc(PACKET_BUF_SIZE);
+    memset(client.sendBuf, 0, PACKET_BUF_SIZE);
+    memset(client.readBuf, 0, PACKET_BUF_SIZE);
+    memset(client.c.tmpTopic, 0, PACKET_BUF_SIZE);
+    memset(client.c.tmpMessage, 0, PACKET_BUF_SIZE);
 
     if(startClientWithSessionConfig(&client,(SeesionConfig *)param) == SUCCESS){
         client.keepRunning(&client);

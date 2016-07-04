@@ -65,25 +65,16 @@ void InitTimer(Timer* timer)
 
 int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
-    
-    timeout_ms = timeout_ms<100?100:timeout_ms;
-    
-	struct timeval interval = {timeout_ms / 1000, (timeout_ms % 1000) * 1000};
-	if (interval.tv_sec < 0 || (interval.tv_sec == 0 && interval.tv_usec <= 0))
-	{
-		interval.tv_sec = 0;
-		interval.tv_usec = 100;
-	}
-    
-	setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval));
 
 	int bytes = 0;
+    int retryTimes = 0;
 	while (bytes < len)
 	{
-		int rc = recv(n->my_socket, &buffer[bytes], (size_t)(len - bytes), 0);
+		int rc = recv(n->my_socket, buffer+bytes, (size_t)(len - bytes), 0);
 		if (rc == -1)
 		{
             if (bytes>0) {
+                printf("%s receive -1\n",__func__);
                 usleep(500);
                 continue;
             }
@@ -91,6 +82,7 @@ int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
             break;
 		}
         else if (rc ==0){
+            printf("%s receive 0 -- %d -- %d %d %d\n",__func__,errno,n->my_socket,bytes,len);
             return 0;
         }
 		else
@@ -184,13 +176,18 @@ int ConnectNetwork(Network* n, char* addr, int port)
                     perror("set no sigpipe error");
                 }
 #endif
-//                int bufSize = 500*1024;
-//                if (setsockopt(n->my_socket, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize))>=0) {
-////                    printf("set send buffer size ------ %d\n",bufSize);
-//                }
-//                if (setsockopt(n->my_socket, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize))>=0) {
-////                    printf("set recevie buffer size ------ %d\n",bufSize);
-//                }
+                int bufSize = 100*1024;
+                if (setsockopt(n->my_socket, SOL_SOCKET, SO_SNDBUF, &bufSize, sizeof(bufSize))>=0) {
+//                    printf("set send buffer size ------ %d\n",bufSize);
+                }
+                if (setsockopt(n->my_socket, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(bufSize))>=0) {
+//                    printf("set recevie buffer size ------ %d\n",bufSize);
+                }
+            }
+            struct timeval interval = {1, 0};
+            
+            if (setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval)) < 0) {
+                printf("-----------------------------set recvtimeout error\n");
             }
             
 		}

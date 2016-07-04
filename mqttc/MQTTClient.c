@@ -30,26 +30,28 @@ int getNextPacketId(Client *c) {
 int sendPacket(Client* c, int length, Timer* timer)
 {
     int rc = FAILURE, 
-        sent = 0;
-#if PLATFORM_LINUX == 1
-    pthread_mutex_lock(&c->ipstack->mutex);
-#endif
+    sent = 0;
+
     int retryTimes = 0;
     while (sent < length )
     {
         int time_left = expired(timer)?5:left_ms(timer);
         
         rc = c->ipstack->mqttwrite(c->ipstack, &c->buf[sent], length - sent, time_left);
+        if (rc <= 0) {
+            printf("[ERROR] -------- SEND LENGTH %d (%d)\n",rc,errno);
+        }
         if (rc < 0){  // there was an error writing the data
-            MqttLog("[WARNING] SEND PACKET FAILED");
+            MqttLog("[WARNING] SEND PACKET FAILED %d",errno);
             break;
         }
         sent += rc;
         if (expired(timer)) {
             if (retryTimes++ >= 3) {
+                printf("#############################\n");
                 break;
             }
-            printf("[IMPORTANT ]timer expired,retring!!!\n");
+            printf("[IMPORTANT ]send expired,retring!!!\n");
         }
     }
     if (sent == length)
@@ -59,9 +61,7 @@ int sendPacket(Client* c, int length, Timer* timer)
     }
     else
         rc = FAILURE;
-#if PLATFORM_LINUX == 1
-    pthread_mutex_unlock(&c->ipstack->mutex);
-#endif
+
     if (sent != length) {
         logToLocal(c->indexTag, log_erro_path, "send packet %d failed,sent Length %d",c->indexTag,sent);
     }
@@ -109,6 +109,7 @@ int decodePacket(Client* c, int* value, int timeout)
         if (rc != 1) {
             MqttLog("%s:%d",__func__,rc);
             if (rc == -1 ) {
+                printf("%s read -1\n",__func__);
                 continue;
             }
             else{
@@ -167,6 +168,7 @@ int validateHeader(MQTTHeader *header){
 
 int readPacket(Client* c, Timer* timer) 
 {
+    memset(c->readbuf, '~', 1024);
     int rc = FAILURE;
     MQTTHeader header = {0};
     int len = 0;
@@ -192,6 +194,7 @@ int readPacket(Client* c, Timer* timer)
             break;
         }
         else{
+            printf("%s read -1\n",__func__);
             logToLocal(c->indexTag, log_erro_path, "unkown header byte ---- %02x",crc);
             return ERR_PACKET_TYPE;
         }
@@ -212,13 +215,17 @@ int readPacket(Client* c, Timer* timer)
 
     /* 3. read the rest of the buffer using a callback to supply the rest of the data */
     
+//    for (int i =0; i<len; i++) {
+//        printf("%02x ",c->readbuf[i]);
+//    }
+//    printf("  len = %d\n",rem_len);
+    
     int leftTime = 0;
     
     int readBytes = 0;
-        
     while (readBytes<rem_len) {
         if (expired(timer)) {
-            printf("[IMPORTANT] read packet retrying\n");
+            printf("[IMPORTANT] read packet retrying - %d: %d %d\n",c->ipstack->my_socket,readBytes,rem_len);
             leftTime = 100;
         }
         else{
@@ -228,21 +235,30 @@ int readPacket(Client* c, Timer* timer)
         
         int length = c->ipstack->mqttread(c->ipstack, c->readbuf + len + readBytes, rem_len - readBytes, leftTime);
         if (length < 0) {
+            printf("%s read -1\n",__func__);
             logToLocal(c->indexTag, log_erro_path, "[RECV error]%s:length = %d",__func__,length);
             continue;
         }
         else if (length == 0){
+            printf("%s read 0\n",__func__);
             logToLocal(c->indexTag, log_erro_path, "[RECV error]%s:length = %d",__func__,0);
             rc = ERR_PACKET_TYPE;
             goto exit;
         }
+//        printf("%d-",length);
         readBytes += length;
     }
     if (rem_len > 0 && readBytes != rem_len){
-        printf("[IMPORTANT ] read packet error,unfinished\n");
+        logToLocal(c->indexTag, log_erro_path, "[RECV] unfinished %d,%d\n",rem_len,readBytes);
+//        printf("[IMPORTANT ] read packet error,unfinished\n");
         rc = FAILURE;
         goto exit;
     }
+    
+//    for (int i =len; i<rem_len+len; i++) {
+//        printf("%c",c->readbuf[i]);
+//    }
+//    printf("\n");
     rc = header.bits.type;
 exit:
     return rc;
@@ -290,9 +306,20 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
     int topicLen = (int)topicName->lenstring.len;
     int msgLen = (int)message->payloadlen;
     
+//    for (int i = 0; i<600; i++) {
+//        printf("%02x ",c->readbuf[i]);
+//    }
+//    printf("\n");
+//    
+//    for (int i = 0; i<600; i++) {
+//        printf("%c ",c->readbuf[i]);
+//    }
+//    printf("\n");
+//    exit(0);
+    
     if (topicLen>MAX_TOPIC_LEN) {
         
-        MqttLog("unknow topic name! len = %d",topicLen);
+        MqttLog("unknow topic name! len = %d: %d",c->indexTag,topicLen);
         logToLocal(c->indexTag,log_erro_path, "unknow topic name! len = %d",topicLen);
         topicLen = MAX_TOPIC_LEN - 1;
         return FAILURE;
@@ -313,7 +340,7 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
     
     c->tmpTopic[topicLen] = '\0';
     c->tmpMessage[msgLen] = '\0';
-    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,c->tmpTopic,getPubMessageId(c->tmpMessage));
+//    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,c->tmpTopic,getPubMessageId(c->tmpMessage));
     logToLocal(c->indexTag,log_file_path,"INFO:收到消息--> topic: %s message:%s",c->tmpTopic,c->tmpMessage);
     if (c->dispatcher->onRecevie) {
         c->dispatcher->onRecevie(c->usedObj,topicName->lenstring.data,message->payload,(int)message->payloadlen);
@@ -394,10 +421,14 @@ int cycle(Client* c, Timer* timer)
         {
             MQTTString topicName;
             MQTTMessage msg;
-            if (MQTTDeserialize_publish((unsigned char*)&msg.dup, (int*)&msg.qos, (unsigned char*)&msg.retained, (unsigned short*)&msg.id, &topicName,
-                                        (unsigned char**)&msg.payload, (int*)&msg.payloadlen, c->readbuf, (int)c->readbuf_size) != 1){
+            int decRc = MQTTDeserialize_publish((unsigned char*)&msg.dup, (int*)&msg.qos, (unsigned char*)&msg.retained, (unsigned short*)&msg.id, &topicName,
+                                                (unsigned char**)&msg.payload, (int*)&msg.payloadlen, c->readbuf, (int)c->readbuf_size);
+            if (decRc != 1){
                 printf("goto exit --- %d",c->indexTag);
                 goto exit;
+            }
+            else{
+                MqttLog("[cid %d] msg ---> %d (%d,%d,%d,%d,%d)\n",c->indexTag,decRc,msg.dup,msg.qos,msg.retained,msg.id,topicName.lenstring.len);
             }
             
             deliverMessage(c, &topicName, &msg);
@@ -449,6 +480,7 @@ int cycle(Client* c, Timer* timer)
                 rc = FAILURE;
             }
             else if ((len = MQTTSerialize_ack(c->buf, c->buf_size, PUBCOMP, 0, mypacketid)) <= 0){
+                MqttLog("[RECV failed] INVALID PUBCOMP -------->>>>>>> %d ",mypacketid);
                 rc = FAILURE;
             }
             else if ((rc = sendPacket(c, len, timer)) != SUCCESS){ // send the PUBREL packet

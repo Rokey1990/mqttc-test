@@ -36,36 +36,78 @@
 int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retained, unsigned short* packetid, MQTTString* topicName,
 		unsigned char** payload, int* payloadlen, unsigned char* buf, int buflen)
 {
-	MQTTHeader header = {0};
-	unsigned char* curdata = buf;
-	unsigned char* enddata = NULL;
-	int rc = 0;
-	int mylen = 0;
+    int rc = 0;
+    int index = 0;
+    MQTTHeader header = {0};
+    header.byte = buf[0];
+    if (header.bits.type != PUBLISH) {
+        return rc;
+    }
+    *dup = header.bits.dup;
+    *retained = header.bits.retain;
+    *qos = header.bits.qos;
+    
+    int rem_len = 0;
+    index = 1;
+    int blen = 0,flag = 0;
+    do {
+        flag = buf[index]&0x80;
+        blen = buf[index]&0x7f;
+        blen = blen<<(7*(index-1));
+        rem_len += blen;
+        index++;
+        if (flag == 0 || index>4) {
+            break;
+        }
+        
+    } while (1);
+//    printf("msg (%d,%d,%d,%d)\n");
+    
 
-	FUNC_ENTRY;
-	header.byte = readChar(&curdata);
-	if (header.bits.type != PUBLISH)
-		goto exit;
-	*dup = header.bits.dup;
-	*qos = header.bits.qos;
-	*retained = header.bits.retain;
-
-	curdata += (rc = MQTTPacket_decodeBuf(curdata, &mylen)); /* read remaining length */
-	enddata = curdata + mylen;
-
-	if (!readMQTTLenString(topicName, &curdata, enddata) ||
-		enddata - curdata < 0) /* do we have enough data to read the protocol version byte? */
-		goto exit;
-
-	if (*qos > 0)
-		*packetid = readInt(&curdata);
-
-	*payloadlen = enddata - curdata;
-	*payload = curdata;
-	rc = 1;
-exit:
-	FUNC_EXIT_RC(rc);
-	return rc;
+    int topicLen = buf[index]*256 + buf[index+1];
+    topicName->lenstring.len = topicLen;
+    index += 2;
+    topicName->lenstring.data = (char *)(buf+index);
+    
+    index += topicLen;
+    *packetid = buf[index]*256 + buf[index+1];
+    *payloadlen = rem_len - topicLen - 4;
+    *payload = buf+index+2;
+    rc = 1;
+    return rc;
+    
+//	MQTTHeader header = {0};
+//	unsigned char* curdata = buf;
+//	unsigned char* enddata = NULL;
+//	int rc = 0;
+//	int mylen = 0;
+//
+//	FUNC_ENTRY;
+//	header.byte = readChar(&curdata);
+//    if (header.bits.type != PUBLISH){
+//        printf("goto exit\n");
+//		goto exit;
+//    }
+//	*dup = header.bits.dup;
+//	*qos = header.bits.qos;
+//	*retained = header.bits.retain;
+//
+//	curdata += (rc = MQTTPacket_decodeBuf(curdata, &mylen)); /* read remaining length */
+//	enddata = curdata + mylen;
+//
+//	if (!readMQTTLenString(topicName, &curdata, enddata) ||
+//		enddata - curdata < 0) /* do we have enough data to read the protocol version byte? */
+//		goto exit;
+//
+//	if (*qos > 0)
+//		*packetid = readInt(&curdata);
+//
+//	*payloadlen = enddata - curdata;
+//	*payload = curdata;
+//	rc = 1;
+//exit:
+//	FUNC_EXIT_RC(rc);
+//	return rc;
 }
 
 

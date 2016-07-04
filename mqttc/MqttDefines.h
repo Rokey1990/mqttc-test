@@ -17,10 +17,10 @@
 #include "MqttDispatcher.h"
 
 #define PACKET_TIMEOUT          65535
-#define PACKET_BUF_SIZE         2048
+#define PACKET_BUF_SIZE         1024
 #define MAX_CLIENT_ID_LEN       128
 #define MAX_TOPIC_LEN           128
-#define MAX_CONTENT_LEN         2048
+#define MAX_CONTENT_LEN         1024
 #define MAX_USERNAME_LEN        128
 #define MAX_PASSWORD_LEN        128
 
@@ -31,7 +31,7 @@
 #define MAX_KEEPALIVE_TIMEO     10          /*心跳延时允许的最大时间*/
 #define ERR_PACKET_TYPE         65534       /*网络异常时，设定PACKET_TYPE无效,设定错误id为0x1111111111111110*/
 
-#define ENABLE_LOG              0
+#define ENABLE_LOG              1
 #define ENABLE_LOG_TIMESTAMP    1
 
 /*
