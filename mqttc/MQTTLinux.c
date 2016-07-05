@@ -68,12 +68,9 @@ int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
     timeout_ms = timeout_ms<100?100:timeout_ms;
     struct timeval interval = {timeout_ms/1000, (timeout_ms%1000)*1000};
     
-    if (setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval)) < 0) {
-        printf("-----------------------------set recvtimeout error\n");
-    }
+    setsockopt(n->my_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval));
 
 	int bytes = 0;
-    int retryTimes = 0;
 	while (bytes < len)
 	{
 		int rc = recv(n->my_socket, buffer+bytes, (size_t)(len - bytes), 0);

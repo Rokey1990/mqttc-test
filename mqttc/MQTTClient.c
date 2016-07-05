@@ -168,7 +168,7 @@ int validateHeader(MQTTHeader *header){
 
 int readPacket(Client* c, Timer* timer) 
 {
-    memset(c->readbuf, '~', 1024);
+    
     int rc = FAILURE;
     MQTTHeader header = {0};
     int len = 0;
@@ -177,7 +177,6 @@ int readPacket(Client* c, Timer* timer)
     /* 1. read the header byte.  This has the packet type in it */
     int readrc = 0;
     int crc = FAILURE;
-    int droppedBytes = 0;
     do{
         readrc = c->ipstack->mqttread(c->ipstack, c->readbuf, 1, left_ms(timer));
         if (readrc == 0) {
@@ -198,10 +197,7 @@ int readPacket(Client* c, Timer* timer)
             return ERR_PACKET_TYPE;
         }
     }while (1);
-    if (droppedBytes>0) {
-        logToLocal(c->indexTag,log_erro_path, "[MQTT RECEIVE ERROR] dropped bytes:%d",droppedBytes);
-    }
-    len = 1;
+        len = 1;
     /* 2. read the remaining length.  This is variable in itself */
     int decrc = decodePacket(c, &rem_len, left_ms(timer));
     if (decrc == MQTTPACKET_READ_ERROR) {
@@ -416,7 +412,7 @@ int cycle(Client* c, Timer* timer)
                 goto exit;
             }
             else{
-//                MqttLog("[cid %d] msg ---> %d (%d,%d,%d,%d,%d)\n",c->indexTag,decRc,msg.dup,msg.qos,msg.retained,msg.id,topicName.lenstring.len);
+                printf("[cid %d] msg ---> %d (%d,%d,%d,%d,%d)\n",c->indexTag,decRc,msg.dup,msg.qos,msg.retained,msg.id,topicName.lenstring.len);
             }
             
             deliverMessage(c, &topicName, &msg);
