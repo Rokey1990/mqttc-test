@@ -305,17 +305,6 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
     int topicLen = (int)topicName->lenstring.len;
     int msgLen = (int)message->payloadlen;
     
-//    for (int i = 0; i<600; i++) {
-//        printf("%02x ",c->readbuf[i]);
-//    }
-//    printf("\n");
-//    
-//    for (int i = 0; i<600; i++) {
-//        printf("%c ",c->readbuf[i]);
-//    }
-//    printf("\n");
-//    exit(0);
-    
     if (topicLen>MAX_TOPIC_LEN) {
         
         MqttLog("unknow topic name! len = %d: %d",c->indexTag,topicLen);
@@ -339,7 +328,7 @@ int deliverMessage(Client* c, MQTTString* topicName, MQTTMessage* message)
     
     c->tmpTopic[topicLen] = '\0';
     c->tmpMessage[msgLen] = '\0';
-    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,c->tmpTopic,getPubMessageId(c->tmpMessage));
+//    printf("[RECV (%d)%s] id = %d\n",topicName->lenstring.len,c->tmpTopic,getPubMessageId(c->tmpMessage));
     logToLocal(c->indexTag,log_file_path,"INFO:收到消息--> topic: %s message:%s",c->tmpTopic,c->tmpMessage);
     if (c->dispatcher->onRecevie) {
         c->dispatcher->onRecevie(c->usedObj,topicName->lenstring.data,message->payload,(int)message->payloadlen);
@@ -364,9 +353,7 @@ int keepalive(Client* c)
             InitTimer(&timer);
             countdown_ms(&timer, 3000);
             int len = MQTTSerialize_pingreq(c->buf, c->buf_size);
-            MqttLog("begin send");
             int rc = sendPacket(c, len, &timer);
-            MqttLog("send ok");
             if (rc!=SUCCESS) {
                 logToLocal(c->indexTag, log_erro_path, "client %d send pingreq failed!",c->indexTag);
             }
