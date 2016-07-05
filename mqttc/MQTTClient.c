@@ -412,7 +412,7 @@ int cycle(Client* c, Timer* timer)
                 goto exit;
             }
             else{
-                printf("[cid %d] msg ---> %d (%d,%d,%d,%d,%d)\n",c->indexTag,decRc,msg.dup,msg.qos,msg.retained,msg.id,topicName.lenstring.len);
+//                printf("[cid %d] msg ---> %d (%d,%d,%d,%d,%d)\n",c->indexTag,decRc,msg.dup,msg.qos,msg.retained,msg.id,topicName.lenstring.len);
             }
             
             deliverMessage(c, &topicName, &msg);
